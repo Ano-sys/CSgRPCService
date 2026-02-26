@@ -16,6 +16,21 @@ Statt nur Bytes über eine Socket-Verbindung zu schicken, werden bei gRPC:
 - Datentypen serialisiert,
 - und Aufrufe stark typisiert zwischen Client und Server umgesetzt.
 
+## Klon-Anweisungen
+
+Dieses Repository verwendet Submodule (`CSgRPCServer` und `CSgRPCClient`). Klone es so:
+
+```bash
+git clone --recurse-submodules https://github.com/Ano-sys/CSgRPCService.git
+cd CSgRPCService
+```
+
+Falls du das Repository bereits ohne Submodule geklont hast:
+
+```bash
+git submodule update --init --recursive
+```
+
 ---
 
 ## Was ist RPC – einfach erklärt
