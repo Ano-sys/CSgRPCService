@@ -1,6 +1,8 @@
 [submodule "CSgRPCClient"]
 	path = CSgRPCClient
-	url = https://github.com/Ano-sys/CSgRPCClient.git
+  url = https://github.com/Ano-sys/CSgRPCClient.git
+  branch = main
 [submodule "CSgRPCServer"]
 	path = CSgRPCServer
-	url = https://github.com/Ano-sys/CSgRPCServer.git
+  url = https://github.com/Ano-sys/CSgRPCServer.git
+  branch = main
