@@ -1,0 +1,17 @@
+﻿syntax = "proto3";
+
+import "google/protobuf/empty.proto";
+
+option csharp_namespace = "Protos";
+
+package grpc_proto;
+
+service SimpleCommunicationService
+{
+	rpc SendMessage (MessageRequest) returns (google.protobuf.Empty);
+}
+
+message MessageRequest
+{
+	string message = 1;
+}
