@@ -1,200 +1,200 @@
-# CS gRPC Service – RPC mit C# (Client/Server)
+# CS gRPC Service - RPC with C# (Client/Server)
 
-Dieses Repository zeigt eine einfache **Remote Procedure Call (RPC)**-Kommunikation mit **gRPC** in C#:
+This repository shows a simple **Remote Procedure Call (RPC)** communication using **gRPC** in C#:
 
-- `csgrpcserver`: Stellt RPC-Methoden bereit
-- `csgrpcclient`: Ruft die Methoden über das Netzwerk auf
-- `Protos/SimpleCommunication.proto`: Vertrag (Interface) zwischen Client und Server
+- `csgrpcserver`: Provides RPC methods
+- `csgrpcclient`: Calls the methods over the network
+- `Protos/SimpleCommunication.proto`: Contract (interface) between client and server
 
-## Ziel des Projekts
+## Project Goal
 
-Das Projekt demonstriert, wie man Funktionsaufrufe zwischen zwei Prozessen/Anwendungen so gestaltet, als wären es lokale Methodenaufrufe.
+The project demonstrates how to design function calls between two processes/applications so they behave like local method calls.
 
-Statt nur Bytes über eine Socket-Verbindung zu schicken, werden bei gRPC:
+Instead of just sending bytes over a socket connection, gRPC provides:
 
-- Schnittstellen klar definiert,
-- Datentypen serialisiert,
-- und Aufrufe stark typisiert zwischen Client und Server umgesetzt.
-
----
-
-## Was ist RPC – einfach erklärt
-
-**RPC (Remote Procedure Call)** bedeutet:
-
-> Eine Funktion wird in einem anderen Prozess (oft auf einem anderen Rechner) aufgerufen, als wäre sie lokal.
-
-Der Aufruf ist technisch ein Netzwerk-Request, aber aus Entwicklersicht ähnelt er einem normalen Methodenaufruf:
-
-1. Client ruft Methode auf (z. B. `GetMessage(...)`)
-2. Anfrage wird serialisiert und über Netzwerk gesendet
-3. Server führt Methode aus
-4. Antwort wird serialisiert zurückgesendet
-5. Client erhält das Ergebnis
-
-### Warum gRPC dafür oft gewählt wird
-
-- basiert auf HTTP/2
-- nutzt Protocol Buffers (kompakt, schnell)
-- stark typisierte Verträge über `.proto`
-- automatische Code-Generierung für Client/Server-Stubs
+- clearly defined interfaces,
+- serialized data types,
+- and strongly typed calls between client and server.
 
 ---
 
-## Wozu ist RPC gut?
+## What is RPC - explained simply
 
-RPC ist besonders sinnvoll, wenn:
+**RPC (Remote Procedure Call)** means:
 
-1. **Anwendungslogik getrennt betrieben** werden soll (Client und Service getrennt deploybar)
-2. **Mehrere Clients** (Desktop, Web, Backend) denselben Service nutzen sollen
-3. **Skalierung** wichtig ist (Server separat horizontal skalierbar)
-4. **Klare API-Verträge** benötigt werden (Versionierung über Protos)
-5. **Sprachübergreifende Kommunikation** relevant ist (z. B. C#, Go, Java, Python)
-6. **Interne Service-Kommunikation** in verteilten Systemen gebraucht wird
+> A function is called in another process (often on another machine) as if it were local.
 
-Typische Einsatzbereiche:
+Technically, the call is a network request, but from a developer perspective it looks similar to a normal method call:
 
-- Microservices
-- zentrale Business-Services
-- interne Unternehmens-APIs
-- performante Service-zu-Service Kommunikation
+1. The client calls a method (e.g. `GetMessage(...)`)
+2. The request is serialized and sent over the network
+3. The server executes the method
+4. The response is serialized and sent back
+5. The client receives the result
 
----
+### Why gRPC is often chosen for this
 
-## Vergleich: RPC vs. reines TCP vs. lokaler Call/Return (DLL oder externer Prozess)
-
-## 1) RPC (z. B. gRPC)
-
-### Vorteile
-
-- **Abstraktion auf Methodenebene** statt Byte-Protokoll von Hand
-- **Stark typisiert** durch `.proto`-Verträge
-- **Automatische Code-Generierung** reduziert Boilerplate
-- **Gute Interoperabilität** zwischen Sprachen/Plattformen
-- **Skalierbar und deploybar** als eigener Service
-- **Einheitlicher Vertrag** für alle Clients
-
-### Nachteile
-
-- **Netzwerkabhängigkeit** (Latenz, Timeouts, Ausfälle)
-- **Komplexeres Betriebsmodell** als reine In-Process-Aufrufe
-- **Versionierungsdisziplin nötig** (Breaking Changes vermeiden)
-- **Debugging verteilt** oft aufwendiger als lokaler Code
+- based on HTTP/2
+- uses Protocol Buffers (compact, fast)
+- strongly typed contracts via `.proto`
+- automatic code generation for client/server stubs
 
 ---
 
-## 2) Reines TCP (Sockets, eigenes Protokoll)
+## When is RPC useful?
 
-### Vorteile
+RPC is especially useful when:
 
-- **Maximale Kontrolle** über Protokoll und Datenfluss
-- **Sehr flexibel** für Spezialfälle
-- Potenziell **sehr effizient**, wenn sauber implementiert
+1. **Application logic should run separately** (client and service can be deployed separately)
+2. **Multiple clients** (desktop, web, backend) should use the same service
+3. **Scalability** matters (server can be scaled horizontally on its own)
+4. **Clear API contracts** are required (versioning via protos)
+5. **Cross-language communication** is relevant (e.g. C#, Go, Java, Python)
+6. **Internal service communication** is needed in distributed systems
 
-### Nachteile
+Typical use cases:
 
-- **Hoher Entwicklungsaufwand** (Framing, Serialisierung, Fehlerfälle)
-- **Mehr Fehleranfälligkeit** durch eigenes Protokolldesign
-- **Schlechte Wartbarkeit**, wenn Spezifikation nicht strikt gepflegt wird
-- Kein standardisierter Stub/Contract-Workflow wie bei gRPC
-
-### Wann sinnvoll?
-
-- Wenn ein proprietäres Low-Level-Protokoll zwingend ist
-- Wenn extrem spezielle Transportanforderungen bestehen
+- microservices
+- central business services
+- internal enterprise APIs
+- high-performance service-to-service communication
 
 ---
 
-## 3) Normaler Call/Return lokal (DLL einbinden)
+## Comparison: RPC vs. raw TCP vs. local call/return (DLL or external process)
 
-Damit ist gemeint: Das C#-Programm bindet eine DLL ein und ruft Funktionen direkt im selben Prozess auf.
+## 1) RPC (e.g. gRPC)
 
-### Vorteile
+### Advantages
 
-- **Sehr schnell** (kein Netzwerk, keine externe Serialisierung)
-- **Einfaches Debugging** im selben Prozess
-- **Geringe Laufzeitkomplexität**
+- **Method-level abstraction** instead of manually handling a byte protocol
+- **Strongly typed** through `.proto` contracts
+- **Automatic code generation** reduces boilerplate
+- **Good interoperability** across languages/platforms
+- **Scalable and deployable** as its own service
+- **Uniform contract** for all clients
 
-### Nachteile
+### Disadvantages
 
-- **Starke Kopplung** zwischen aufrufender App und Bibliothek
-- **Deployment-Kopplung** (Versionen müssen zusammenpassen)
-- **Schwächere Isolation**: Fehler/Crash in DLL kann den gesamten Prozess betreffen
-- **Skalierung begrenzt** auf den lokalen Prozess/Host
-
-### Wann sinnvoll?
-
-- Für lokale, performante Funktionsbibliotheken
-- Wenn keine Prozess- oder Rechnertrennung nötig ist
+- **Network dependency** (latency, timeouts, outages)
+- **More complex operating model** than pure in-process calls
+- **Versioning discipline required** (avoid breaking changes)
+- **Distributed debugging** is often more complex than local code
 
 ---
 
-## 4) Externe Programme per Call-and-Return (Prozess starten, Ergebnis abholen)
+## 2) Raw TCP (sockets, custom protocol)
 
-Damit ist gemeint: Das Hauptprogramm startet ein separates Tool/Programm, übergibt Parameter, wartet auf Rückgabe (Exit-Code, Output, Datei).
+### Advantages
 
-### Vorteile
+- **Maximum control** over protocol and data flow
+- **Very flexible** for special cases
+- Potentially **very efficient** if implemented well
 
-- **Starke Isolation** zwischen Hauptprozess und Tool
-- Kann vorhandene große Tools wiederverwenden
-- Fehler im Tool beeinträchtigen den Hostprozess meist weniger direkt
+### Disadvantages
 
-### Nachteile
+- **High development effort** (framing, serialization, error cases)
+- **More error-prone** due to custom protocol design
+- **Poor maintainability** if the specification is not maintained strictly
+- No standardized stub/contract workflow like gRPC
 
-- **Startkosten pro Aufruf** (Prozessstart ist teuer)
-- **Umständliche Datenübergabe** (Argumente, StdOut, Dateien, Pipes)
-- **Begrenzte Interaktivität** für viele kleine Aufrufe
-- **Betrieb/Monitoring** komplex bei vielen Tool-Aufrufen
+### When does it make sense?
 
-### Wann sinnvoll?
-
-- Bei seltenen, schweren Batch-Aufgaben
-- Wenn bestehende CLI-Tools integriert werden müssen
+- When a proprietary low-level protocol is required
+- When extremely specific transport requirements exist
 
 ---
 
-## Kurzfazit: Welche Technik wann?
+## 3) Normal local call/return (referencing a DLL)
 
-- **gRPC/RPC**: Beste Wahl für stabile, typisierte Kommunikation zwischen getrennten Anwendungen/Services.
-- **Reines TCP**: Nur dann, wenn man bewusst ein eigenes Protokoll und volle Low-Level-Kontrolle braucht.
-- **DLL lokal**: Beste Wahl für maximale lokale Performance und enge Integration im selben Prozess.
-- **Externer Prozessaufruf**: Gut für lose gekoppelte Tool-Integration und isolierte Batch-Schritte.
+This means: The C# program references a DLL and calls functions directly in the same process.
 
----
+### Advantages
 
-## Entscheidungsleitfaden (praktisch)
+- **Very fast** (no network, no external serialization)
+- **Simple debugging** in the same process
+- **Low runtime complexity**
 
-Frage dich bei neuen Features:
+### Disadvantages
 
-1. Muss die Funktion **über Netzwerk/zwischen Prozessen** nutzbar sein? → eher **RPC**
-2. Muss es **im selben Prozess extrem schnell** laufen? → eher **DLL**
-3. Muss ein bestehendes großes Tool nur gelegentlich genutzt werden? → eher **externer Prozess**
-4. Braucht ihr ein **eigenes Binärprotokoll mit Spezialanforderungen**? → ggf. **TCP direkt**
+- **Tight coupling** between the calling app and the library
+- **Deployment coupling** (versions must match)
+- **Weaker isolation**: an error/crash in the DLL can affect the whole process
+- **Limited scaling** to the local process/host
 
----
+### When does it make sense?
 
-## Projektstruktur
-
-- `csgrpcclient/CSgRPCClient/Program.cs`: Beispiel-Client
-- `csgrpcserver/CSgRPCServer/Program.cs`: Beispiel-Server
-- `Protos/SimpleCommunication.proto`: RPC-Vertrag
+- For local, high-performance function libraries
+- When no process or machine separation is required
 
 ---
 
-## Praktischer Hinweis zu Fehlerbehandlung bei RPC
+## 4) External programs via call-and-return (start process, collect result)
 
-Im Gegensatz zu lokalem Funktionsaufruf sollten bei RPC immer mitgedacht werden:
+This means: The main program starts a separate tool/program, passes parameters, and waits for a result (exit code, output, file).
 
-- Timeouts/Deadlines
-- Retries (kontrolliert)
-- Idempotenz
-- saubere Fehlercodes
-- Telemetrie/Logging für verteilte Fehleranalyse
+### Advantages
 
-Gerade diese Punkte sind ein Kernunterschied zwischen „lokalem Call“ und „Remote Call“.
+- **Strong isolation** between the main process and the tool
+- Can reuse large existing tools
+- Errors in the tool usually affect the host process less directly
+
+### Disadvantages
+
+- **Startup cost per call** (process startup is expensive)
+- **Cumbersome data transfer** (arguments, stdout, files, pipes)
+- **Limited interactivity** for many small calls
+- **Operations/monitoring** become complex with many tool calls
+
+### When does it make sense?
+
+- For infrequent, heavy batch tasks
+- When existing CLI tools must be integrated
 
 ---
 
-## Zusammenfassung in einem Satz
+## Short conclusion: Which technique when?
 
-RPC ist ideal, wenn Funktionen **als Service** bereitgestellt werden sollen; lokale DLL-Aufrufe sind ideal für **in-process Performance**, und externe Prozessaufrufe eignen sich für **lose gekoppelte Tool-Integration** mit höherem Laufzeit-Overhead.
+- **gRPC/RPC**: Best choice for stable, typed communication between separate applications/services.
+- **Raw TCP**: Only when you deliberately need your own protocol and full low-level control.
+- **Local DLL**: Best choice for maximum local performance and tight integration in the same process.
+- **External process call**: Good for loosely coupled tool integration and isolated batch steps with higher runtime overhead.
+
+---
+
+## Decision guide (practical)
+
+Ask yourself for new features:
+
+1. Does the function need to be usable **over the network/between processes**? -> more likely **RPC**
+2. Must it run **extremely fast in the same process**? -> more likely **DLL**
+3. Does an existing large tool only need to be used occasionally? -> more likely **external process**
+4. Do you need a **custom binary protocol with special requirements**? -> possibly **direct TCP**
+
+---
+
+## Project Structure
+
+- `csgrpcclient/CSgRPCClient/Program.cs`: Example client
+- `csgrpcserver/CSgRPCServer/Program.cs`: Example server
+- `Protos/SimpleCommunication.proto`: RPC contract
+
+---
+
+## Practical note on error handling in RPC
+
+Unlike a local function call, RPC should always consider:
+
+- timeouts/deadlines
+- retries (controlled)
+- idempotency
+- clean error codes
+- telemetry/logging for distributed error analysis
+
+These points in particular are a core difference between a "local call" and a "remote call".
+
+---
+
+## One-sentence summary
+
+RPC is ideal when functions should be provided **as a service**; local DLL calls are ideal for **in-process performance**, and external process calls are suited for **loosely coupled tool integration** with higher runtime overhead.
